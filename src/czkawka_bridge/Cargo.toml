@@ -1,0 +1,13 @@
+[package]
+name = "czkawka_bridge"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+czkawka_core = { path = "../../../czkawka/czkawka_core" }
+
+[build-dependencies]
+cbindgen = "0.27"

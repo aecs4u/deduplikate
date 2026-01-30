@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Deduplikate
+Name[it]=Deduplikate
+GenericName=Duplicate File Finder
+GenericName[it]=Trova File Duplicati
+Comment=Find and manage duplicate files
+Comment[it]=Trova e gestisci file duplicati
+Exec=deduplikate
+Icon=deduplikate
+Terminal=false
+Categories=Qt;KDE;Utility;FileTools;
+Keywords=duplicate;files;cleaner;disk;space;
+MimeType=inode/directory;
+StartupNotify=true
+X-DBUS-ServiceName=it.aecs4u.deduplikate
+X-DBUS-StartupType=Unique
+X-KDE-SubstituteUID=false
