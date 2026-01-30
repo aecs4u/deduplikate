@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QIcon>
+#include <QFont>
 
 DuplicateModel::DuplicateModel(QObject *parent)
     : QAbstractItemModel(parent)
@@ -56,7 +57,7 @@ void DuplicateModel::selectAll()
             item.checked = true;
         }
     }
-    emit dataChanged(index(0, 0), index(rowCount() - 1, 0));
+    Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, 0));
 }
 
 void DuplicateModel::selectNone()
@@ -66,7 +67,7 @@ void DuplicateModel::selectNone()
             item.checked = false;
         }
     }
-    emit dataChanged(index(0, 0), index(rowCount() - 1, 0));
+    Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, 0));
 }
 
 void DuplicateModel::invertSelection()
@@ -76,7 +77,7 @@ void DuplicateModel::invertSelection()
             item.checked = !item.checked;
         }
     }
-    emit dataChanged(index(0, 0), index(rowCount() - 1, 0));
+    Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, 0));
 }
 
 QList<QString> DuplicateModel::getSelectedFiles() const
@@ -176,7 +177,7 @@ QVariant DuplicateModel::data(const QModelIndex &index, int role) const
         int groupIdx = id >> 32;
         if (groupIdx >= 0 && groupIdx < m_items.size()) {
             if (role == Qt::DisplayRole && index.column() == 1) {
-                return QString("Group %1 (%2 files)")
+                return QStringLiteral("Group %1 (%2 files)")
                     .arg(groupIdx + 1)
                     .arg(m_items[groupIdx].size());
             } else if (role == Qt::FontRole) {
@@ -272,7 +273,7 @@ bool DuplicateModel::setData(const QModelIndex &index, const QVariant &value, in
             fileIdx >= 0 && fileIdx < m_items[groupIdx].size()) {
 
             m_items[groupIdx][fileIdx].checked = (value.toInt() == Qt::Checked);
-            emit dataChanged(index, index);
+            Q_EMIT dataChanged(index, index);
             return true;
         }
     }
@@ -283,18 +284,18 @@ bool DuplicateModel::setData(const QModelIndex &index, const QVariant &value, in
 QString DuplicateModel::formatSize(quint64 size) const
 {
     if (size > 1024 * 1024 * 1024) {
-        return QString::number(size / (1024.0 * 1024.0 * 1024.0), 'f', 2) + " GB";
+        return QString::number(size / (1024.0 * 1024.0 * 1024.0), 'f', 2) + QLatin1String(" GB");
     } else if (size > 1024 * 1024) {
-        return QString::number(size / (1024.0 * 1024.0), 'f', 2) + " MB";
+        return QString::number(size / (1024.0 * 1024.0), 'f', 2) + QLatin1String(" MB");
     } else if (size > 1024) {
-        return QString::number(size / 1024.0, 'f', 2) + " KB";
+        return QString::number(size / 1024.0, 'f', 2) + QLatin1String(" KB");
     } else {
-        return QString::number(size) + " bytes";
+        return QString::number(size) + QLatin1String(" bytes");
     }
 }
 
 QString DuplicateModel::formatDate(quint64 timestamp) const
 {
     QDateTime dateTime = QDateTime::fromSecsSinceEpoch(timestamp);
-    return dateTime.toString("yyyy-MM-dd hh:mm:ss");
+    return dateTime.toString(QStringLiteral("yyyy-MM-dd hh:mm:ss"));
 }

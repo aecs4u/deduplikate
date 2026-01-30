@@ -38,11 +38,11 @@ void DuplicateFinder::startScan(const ScanParameters &params)
         m_groupCount = m_scanThread->getGroupCount();
         m_wastedSpace = m_scanThread->getWastedSpace();
 
-        emit resultsReady(m_groupCount, m_wastedSpace);
-        emit scanFinished(true);
+        Q_EMIT resultsReady(m_groupCount, m_wastedSpace);
+        Q_EMIT scanFinished(true);
     });
 
-    emit scanStarted();
+    Q_EMIT scanStarted();
     m_scanThread->start();
 }
 
@@ -185,7 +185,7 @@ void DuplicateFinder::ScanThread::run()
             czkawka_duplicate_entries_free(const_cast<CDuplicateEntry*>(entries), count);
         }
 
-        emit progress(i + 1, m_groupCount);
+        Q_EMIT progress(i + 1, m_groupCount);
     }
 
     qDebug() << "Scan completed, processed" << m_results.size() << "groups";

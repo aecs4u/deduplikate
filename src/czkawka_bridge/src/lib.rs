@@ -1,7 +1,7 @@
 use czkawka_core::common::model::{CheckingMethod, HashType};
-use czkawka_core::common::tool_data::CommonToolData;
+use czkawka_core::common::tool_data::CommonData;
+use czkawka_core::common::traits::Search;
 use czkawka_core::tools::duplicate::{DuplicateFinder, DuplicateFinderParameters};
-use std::collections::BTreeMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::path::PathBuf;
@@ -78,6 +78,8 @@ pub type ProgressCallback = extern "C" fn(current: u64, total: u64, user_data: *
 pub struct CzkawkaDuplicateFinder {
     finder: DuplicateFinder,
     stop_flag: Arc<AtomicBool>,
+    included_paths: Vec<PathBuf>,
+    excluded_paths: Vec<PathBuf>,
 }
 
 // Initialize a new duplicate finder
@@ -101,7 +103,12 @@ pub extern "C" fn czkawka_duplicate_finder_new(
     let finder = DuplicateFinder::new(params);
     let stop_flag = Arc::new(AtomicBool::new(false));
 
-    Box::into_raw(Box::new(CzkawkaDuplicateFinder { finder, stop_flag }))
+    Box::into_raw(Box::new(CzkawkaDuplicateFinder {
+        finder,
+        stop_flag,
+        included_paths: Vec::new(),
+        excluded_paths: Vec::new(),
+    }))
 }
 
 // Free the duplicate finder
@@ -131,7 +138,7 @@ pub extern "C" fn czkawka_duplicate_finder_add_directory(
             Err(_) => return false,
         };
 
-        finder.finder.common_data.directories.add_included_directory(PathBuf::from(path_str));
+        finder.included_paths.push(PathBuf::from(path_str));
         true
     }
 }
@@ -153,7 +160,7 @@ pub extern "C" fn czkawka_duplicate_finder_add_excluded_directory(
             Err(_) => return false,
         };
 
-        finder.finder.common_data.directories.add_excluded_directory(PathBuf::from(path_str));
+        finder.excluded_paths.push(PathBuf::from(path_str));
         true
     }
 }
@@ -166,7 +173,7 @@ pub extern "C" fn czkawka_duplicate_finder_set_recursive(
 ) {
     if !finder.is_null() {
         unsafe {
-            (*finder).finder.common_data.recursive_search = recursive;
+            (*finder).finder.set_recursive_search(recursive);
         }
     }
 }
@@ -179,7 +186,7 @@ pub extern "C" fn czkawka_duplicate_finder_set_min_size(
 ) {
     if !finder.is_null() {
         unsafe {
-            (*finder).finder.common_data.minimal_file_size = size;
+            (*finder).finder.set_minimal_file_size(size);
         }
     }
 }
@@ -192,7 +199,7 @@ pub extern "C" fn czkawka_duplicate_finder_set_max_size(
 ) {
     if !finder.is_null() {
         unsafe {
-            (*finder).finder.common_data.maximal_file_size = size;
+            (*finder).finder.set_maximal_file_size(size);
         }
     }
 }
@@ -205,9 +212,18 @@ pub extern "C" fn czkawka_duplicate_finder_search(finder: *mut CzkawkaDuplicateF
     }
 
     unsafe {
-        let finder = &mut *finder;
-        finder.stop_flag.store(false, Ordering::Relaxed);
-        finder.finder.search(&finder.stop_flag, None);
+        let finder_ptr = &mut *finder;
+        finder_ptr.stop_flag.store(false, Ordering::Relaxed);
+
+        // Set included and excluded paths using CommonData trait methods
+        let included = std::mem::take(&mut finder_ptr.included_paths);
+        let excluded = std::mem::take(&mut finder_ptr.excluded_paths);
+
+        finder_ptr.finder.set_included_paths(included);
+        finder_ptr.finder.set_excluded_paths(excluded);
+
+        // Call search from the Search trait
+        finder_ptr.finder.search(&finder_ptr.stop_flag, None);
         true
     }
 }

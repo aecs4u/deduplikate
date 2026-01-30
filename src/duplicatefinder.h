@@ -46,7 +46,7 @@ public:
     int getGroupCount() const;
     quint64 getWastedSpace() const;
 
-signals:
+Q_SIGNALS:
     void scanStarted();
     void scanProgress(int current, int total);
     void scanFinished(bool success);
@@ -74,7 +74,7 @@ public:
     int getGroupCount() const;
     quint64 getWastedSpace() const;
 
-signals:
+Q_SIGNALS:
     void progress(int current, int total);
 
 protected:

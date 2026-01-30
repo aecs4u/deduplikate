@@ -25,7 +25,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
+private Q_SLOTS:
     void onToolSelected(int index);
     void onScanClicked();
     void onStopClicked();

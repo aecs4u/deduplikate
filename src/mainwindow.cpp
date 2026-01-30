@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QPushButton>
+#include <QApplication>
 #include <KLocalizedString>
 #include <KIO/DeleteJob>
 #include <KIO/CopyJob>
@@ -244,16 +245,16 @@ void MainWindow::createBottomPanel()
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
 
-    m_scanButton = new QPushButton(QIcon::fromTheme("system-search"), i18n("Scan"));
-    m_stopButton = new QPushButton(QIcon::fromTheme("process-stop"), i18n("Stop"));
+    m_scanButton = new QPushButton(QIcon::fromTheme(QStringLiteral("system-search")), i18n("Scan"));
+    m_stopButton = new QPushButton(QIcon::fromTheme(QStringLiteral("process-stop")), i18n("Stop"));
     m_stopButton->setEnabled(false);
-    m_deleteButton = new QPushButton(QIcon::fromTheme("edit-delete"), i18n("Delete"));
+    m_deleteButton = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), i18n("Delete"));
     m_deleteButton->setEnabled(false);
-    m_moveButton = new QPushButton(QIcon::fromTheme("folder-move"), i18n("Move"));
+    m_moveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("folder-move")), i18n("Move"));
     m_moveButton->setEnabled(false);
-    m_hardlinkButton = new QPushButton(QIcon::fromTheme("link"), i18n("Hardlink"));
+    m_hardlinkButton = new QPushButton(QIcon::fromTheme(QStringLiteral("link")), i18n("Hardlink"));
     m_hardlinkButton->setEnabled(false);
-    m_symlinkButton = new QPushButton(QIcon::fromTheme("emblem-symbolic-link"), i18n("Symlink"));
+    m_symlinkButton = new QPushButton(QIcon::fromTheme(QStringLiteral("emblem-symbolic-link")), i18n("Symlink"));
     m_symlinkButton->setEnabled(false);
     m_selectAllButton = new QPushButton(i18n("Select All"));
     m_selectNoneButton = new QPushButton(i18n("Select None"));
@@ -367,13 +368,13 @@ void MainWindow::onDeleteClicked()
 
     QString sizeStr;
     if (totalSize > 1024 * 1024 * 1024) {
-        sizeStr = QString::number(totalSize / (1024.0 * 1024.0 * 1024.0), 'f', 2) + " GB";
+        sizeStr = QString::number(totalSize / (1024.0 * 1024.0 * 1024.0), 'f', 2) + QLatin1String(" GB");
     } else if (totalSize > 1024 * 1024) {
-        sizeStr = QString::number(totalSize / (1024.0 * 1024.0), 'f', 2) + " MB";
+        sizeStr = QString::number(totalSize / (1024.0 * 1024.0), 'f', 2) + QLatin1String(" MB");
     } else if (totalSize > 1024) {
-        sizeStr = QString::number(totalSize / 1024.0, 'f', 2) + " KB";
+        sizeStr = QString::number(totalSize / 1024.0, 'f', 2) + QLatin1String(" KB");
     } else {
-        sizeStr = QString::number(totalSize) + " bytes";
+        sizeStr = QString::number(totalSize) + QLatin1String(" bytes");
     }
 
     QMessageBox msgBox(this);
@@ -416,7 +417,7 @@ void MainWindow::onDeleteClicked()
         if (moveToTrash) {
             // Use KIO to move to trash
             QUrl fileUrl = QUrl::fromLocalFile(filePath);
-            KIO::DeleteJob *job = KIO::trash(fileUrl, KIO::HideProgressInfo);
+            KIO::CopyJob *job = KIO::trash(fileUrl, KIO::HideProgressInfo);
             job->exec();
             success = (job->error() == 0);
         } else {
@@ -444,7 +445,7 @@ void MainWindow::onDeleteClicked()
         if (failCount > 0) {
             QString message = i18n("Failed to delete %1 files:\n", failCount);
             for (int i = 0; i < qMin(5, failedFiles.count()); ++i) {
-                message += failedFiles[i] + "\n";
+                message += failedFiles[i] + QLatin1String("\n");
             }
             if (failedFiles.count() > 5) {
                 message += i18n("... and %1 more", failedFiles.count() - 5);
@@ -514,7 +515,7 @@ void MainWindow::onMoveClicked()
         }
 
         QUrl sourceUrl = QUrl::fromLocalFile(filePath);
-        QUrl destUrl = QUrl::fromLocalFile(targetDir + "/" + info.fileName());
+        QUrl destUrl = QUrl::fromLocalFile(targetDir + QLatin1String("/") + info.fileName());
 
         KIO::CopyJob *job = KIO::move(sourceUrl, destUrl, KIO::HideProgressInfo);
         job->exec();
@@ -533,7 +534,7 @@ void MainWindow::onMoveClicked()
     if (failCount > 0) {
         QString message = i18n("Failed to move %1 files:\n", failCount);
         for (int i = 0; i < qMin(5, failedFiles.count()); ++i) {
-            message += failedFiles[i] + "\n";
+            message += failedFiles[i] + QLatin1String("\n");
         }
         if (failedFiles.count() > 5) {
             message += i18n("... and %1 more", failedFiles.count() - 5);
@@ -630,11 +631,11 @@ void MainWindow::onHardlinkClicked()
                     successCount++;
                 } else {
                     failCount++;
-                    failedFiles.append(filePath + " (link failed)");
+                    failedFiles.append(filePath + QLatin1String(" (link failed)"));
                 }
             } else {
                 failCount++;
-                failedFiles.append(filePath + " (remove failed)");
+                failedFiles.append(filePath + QLatin1String(" (remove failed)"));
             }
         }
     }
@@ -645,7 +646,7 @@ void MainWindow::onHardlinkClicked()
     if (failCount > 0) {
         QString message = i18n("Failed to create hardlinks for %1 files:\n", failCount);
         for (int i = 0; i < qMin(5, failedFiles.count()); ++i) {
-            message += failedFiles[i] + "\n";
+            message += failedFiles[i] + QLatin1String("\n");
         }
         if (failedFiles.count() > 5) {
             message += i18n("... and %1 more", failedFiles.count() - 5);
@@ -736,11 +737,11 @@ void MainWindow::onSymlinkClicked()
                     successCount++;
                 } else {
                     failCount++;
-                    failedFiles.append(filePath + " (symlink failed)");
+                    failedFiles.append(filePath + QLatin1String(" (symlink failed)"));
                 }
             } else {
                 failCount++;
-                failedFiles.append(filePath + " (remove failed)");
+                failedFiles.append(filePath + QLatin1String(" (remove failed)"));
             }
         }
     }
@@ -751,7 +752,7 @@ void MainWindow::onSymlinkClicked()
     if (failCount > 0) {
         QString message = i18n("Failed to create symbolic links for %1 files:\n", failCount);
         for (int i = 0; i < qMin(5, failedFiles.count()); ++i) {
-            message += failedFiles[i] + "\n";
+            message += failedFiles[i] + QLatin1String("\n");
         }
         if (failedFiles.count() > 5) {
             message += i18n("... and %1 more", failedFiles.count() - 5);
@@ -822,13 +823,13 @@ void MainWindow::onResultsReady(int groupCount, quint64 wastedSpace)
 
     QString wastedSpaceStr;
     if (wastedSpace > 1024 * 1024 * 1024) {
-        wastedSpaceStr = QString::number(wastedSpace / (1024.0 * 1024.0 * 1024.0), 'f', 2) + " GB";
+        wastedSpaceStr = QString::number(wastedSpace / (1024.0 * 1024.0 * 1024.0), 'f', 2) + QLatin1String(" GB");
     } else if (wastedSpace > 1024 * 1024) {
-        wastedSpaceStr = QString::number(wastedSpace / (1024.0 * 1024.0), 'f', 2) + " MB";
+        wastedSpaceStr = QString::number(wastedSpace / (1024.0 * 1024.0), 'f', 2) + QLatin1String(" MB");
     } else if (wastedSpace > 1024) {
-        wastedSpaceStr = QString::number(wastedSpace / 1024.0, 'f', 2) + " KB";
+        wastedSpaceStr = QString::number(wastedSpace / 1024.0, 'f', 2) + QLatin1String(" KB");
     } else {
-        wastedSpaceStr = QString::number(wastedSpace) + " bytes";
+        wastedSpaceStr = QString::number(wastedSpace) + QLatin1String(" bytes");
     }
 
     m_resultsLabel->setText(i18n("Found %1 duplicate groups, wasted space: %2",
