@@ -31,33 +31,31 @@ find_package(KF6 REQUIRED COMPONENTS
     ConfigWidgets
     WidgetsAddons
     KIO
+    Config
 )
 
 # Build Rust bridge library
 add_subdirectory(src/czkawka_bridge)
 
-# Application sources
-set(deduplikate_SRCS
-    src/main.cpp
+# Core library sources (without main.cpp for testing)
+set(deduplikate_core_SRCS
     src/mainwindow.cpp
     src/duplicatefinder.cpp
     src/duplicatemodel.cpp
     src/settingsdialog.cpp
 )
 
-# Application headers
-set(deduplikate_HDRS
+set(deduplikate_core_HDRS
     src/mainwindow.h
     src/duplicatefinder.h
     src/duplicatemodel.h
     src/settingsdialog.h
 )
 
-# Create the executable
-add_executable(deduplikate ${deduplikate_SRCS} ${deduplikate_HDRS})
+# Create a static library for core functionality (used by tests)
+add_library(deduplikate_core STATIC ${deduplikate_core_SRCS} ${deduplikate_core_HDRS})
 
-# Link libraries
-target_link_libraries(deduplikate
+target_link_libraries(deduplikate_core PUBLIC
     Qt6::Core
     Qt6::Widgets
     Qt6::Concurrent
@@ -68,14 +66,20 @@ target_link_libraries(deduplikate
     KF6::WidgetsAddons
     KF6::KIOCore
     KF6::KIOWidgets
+    KF6::ConfigCore
     czkawka_bridge
 )
 
-# Include directories
-target_include_directories(deduplikate PRIVATE
+target_include_directories(deduplikate_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/czkawka_bridge
 )
+
+# Create the executable
+add_executable(deduplikate src/main.cpp)
+
+# Link against core library
+target_link_libraries(deduplikate PRIVATE deduplikate_core)
 
 # Install
 install(TARGETS deduplikate ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
@@ -85,5 +89,12 @@ install(FILES data/deduplikate.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 
 # Install icon
 install(FILES data/deduplikate.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+
+# Testing
+option(BUILD_TESTING "Build the testing tree" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
