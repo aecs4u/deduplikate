@@ -6,7 +6,7 @@ class TestDuplicateModel : public QObject
 {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void init();
@@ -80,10 +80,10 @@ QList<DuplicateFinder::DuplicateGroup> TestDuplicateModel::createTestData(int gr
 
         for (int f = 0; f < filesPerGroup; ++f) {
             DuplicateFinder::DuplicateEntry entry;
-            entry.path = QString("/tmp/test/group%1/file%2.txt").arg(g).arg(f);
+            entry.path = QStringLiteral("/tmp/test/group%1/file%2.txt").arg(g).arg(f);
             entry.size = 1024 * (g + 1);  // Different sizes for each group
             entry.modifiedDate = 1640000000 + (g * 1000) + f;
-            entry.hash = QString("hash%1").arg(g);
+            entry.hash = QStringLiteral("hash%1").arg(g);
             group.entries.append(entry);
         }
 
@@ -262,7 +262,7 @@ void TestDuplicateModel::testGetSelectedFiles()
 
     // Check paths are correct
     for (const QString &path : selected) {
-        QVERIFY(path.contains("/tmp/test/group0/"));
+        QVERIFY(path.contains(QLatin1String("/tmp/test/group0/")));
     }
 }
 
@@ -305,19 +305,19 @@ void TestDuplicateModel::testColumnCount()
 void TestDuplicateModel::testHeaderData()
 {
     QVariant header0 = model->headerData(0, Qt::Horizontal, Qt::DisplayRole);
-    QCOMPARE(header0.toString(), QString(""));  // Checkbox column
+    QCOMPARE(header0.toString(), QString());  // Checkbox column (empty string)
 
     QVariant header1 = model->headerData(1, Qt::Horizontal, Qt::DisplayRole);
-    QVERIFY(header1.toString().contains("Name") || header1.toString().contains("File"));
+    QVERIFY(header1.toString().contains(QLatin1String("Name")) || header1.toString().contains(QLatin1String("File")));
 
     QVariant header2 = model->headerData(2, Qt::Horizontal, Qt::DisplayRole);
-    QVERIFY(header2.toString().contains("Size"));
+    QVERIFY(header2.toString().contains(QLatin1String("Size")));
 
     QVariant header3 = model->headerData(3, Qt::Horizontal, Qt::DisplayRole);
-    QVERIFY(header3.toString().contains("Modified") || header3.toString().contains("Date"));
+    QVERIFY(header3.toString().contains(QLatin1String("Modified")) || header3.toString().contains(QLatin1String("Date")));
 
     QVariant header4 = model->headerData(4, Qt::Horizontal, Qt::DisplayRole);
-    QVERIFY(header4.toString().contains("Directory") || header4.toString().contains("Path"));
+    QVERIFY(header4.toString().contains(QLatin1String("Directory")) || header4.toString().contains(QLatin1String("Path")));
 }
 
 void TestDuplicateModel::testSizeFormatting()
@@ -332,7 +332,7 @@ void TestDuplicateModel::testSizeFormatting()
     QString sizeStr = sizeData.toString();
 
     // Should contain KB or MB
-    QVERIFY(sizeStr.contains("KB") || sizeStr.contains("MB") || sizeStr.contains("bytes"));
+    QVERIFY(sizeStr.contains(QLatin1String("KB")) || sizeStr.contains(QLatin1String("MB")) || sizeStr.contains(QLatin1String("bytes")));
 }
 
 void TestDuplicateModel::testDateFormatting()
@@ -361,11 +361,11 @@ void TestDuplicateModel::testDisplayRole()
 
     // Test file name (column 1)
     QVariant nameData = model->data(model->index(0, 1, group), Qt::DisplayRole);
-    QVERIFY(nameData.toString().contains("file0.txt"));
+    QVERIFY(nameData.toString().contains(QLatin1String("file0.txt")));
 
     // Test directory (column 4)
     QVariant dirData = model->data(model->index(0, 4, group), Qt::DisplayRole);
-    QVERIFY(dirData.toString().contains("/tmp/test/group0"));
+    QVERIFY(dirData.toString().contains(QLatin1String("/tmp/test/group0")));
 }
 
 void TestDuplicateModel::testTooltipRole()
@@ -379,7 +379,7 @@ void TestDuplicateModel::testTooltipRole()
     // Tooltip should show full path
     QVariant tooltip = model->data(model->index(0, 1, group), Qt::ToolTipRole);
     if (!tooltip.isNull()) {
-        QVERIFY(tooltip.toString().contains("/tmp/test/group0/file0.txt"));
+        QVERIFY(tooltip.toString().contains(QLatin1String("/tmp/test/group0/file0.txt")));
     }
 }
 
